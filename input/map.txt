@@ -1,0 +1,6 @@
+S	N	R2	N	D3
+N	R1,D2	N	W4	N
+N	DE	N	N	N
+N	N	XR,D2,W2	D1,R1	W1
+N	N	XD	XR	N
+N	N	N	N	T
