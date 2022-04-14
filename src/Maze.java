@@ -86,18 +86,72 @@ public class Maze {
 		// yet!
 		solveHelper(map[sourceRow][sourceCol + 1], target);// call it recursively for right neighbor
 		if (sourceRow == rowsMinus1) {
-			source.shortest = map[sourceRow][sourceCol + 1].shortest + 1;
-			source.nextStep = map[sourceRow][sourceCol + 1];
+			if(source.deadend) {
+				source.shortest = 100;
+				source.nextStep = null;
+			} else {
+				if(source.noDown) {
+					if(source.horizontalJump > 0) {
+						source.shortest = map[sourceRow][sourceCol + source.horizontalJump].shortest + source.wait + 1;
+						source.nextStep = map[sourceRow][sourceCol + source.horizontalJump];
+					} else {
+						source.shortest = map[sourceRow][sourceCol + 1].shortest + source.wait + 1;
+						source.nextStep = map[sourceRow][sourceCol + 1];
+					}
+				} else {
+					if(source.horizontalJump > 0) {
+						source.shortest = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump].shortest + source.wait + 1;
+						source.nextStep = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump];
+					} else {
+						source.shortest = map[sourceRow + source.verticalJump][sourceCol + 1].shortest + source.wait + 1;
+						source.nextStep = map[sourceRow + source.verticalJump][sourceCol + 1];
+					}
+				}
+			}
 		} else if (sourceCol == columnMinus1) {
-			source.shortest = map[sourceRow + 1][sourceCol].shortest + 1;
-			source.nextStep = map[sourceRow + 1][sourceCol];
+			if(source.deadend) {
+				source.shortest = 100;
+				source.nextStep = null;
+			} else {
+				if(source.noRight) {
+					if(source.verticalJump > 0) {
+						source.shortest = map[sourceRow + source.verticalJump][sourceCol].shortest + source.wait + 1;
+						source.nextStep = map[sourceRow + source.verticalJump][sourceCol];
+					} else {
+						source.shortest = map[sourceRow + 1][sourceCol].shortest + source.wait + 1;
+						source.nextStep = map[sourceRow + 1][sourceCol];
+					}
+				} else {
+					if(source.verticalJump > 0) {
+						source.shortest = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump].shortest + source.wait + 1;
+						source.nextStep = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump];
+					} else {
+						source.shortest = map[sourceRow + 1][sourceCol + source.horizontalJump].shortest + source.wait + 1;
+						source.nextStep = map[sourceRow + 1][sourceCol + source.horizontalJump];
+					}
+				}
+			}
 		} else {
-			Cell rightNeighbor = map[sourceRow][sourceCol + 1], bottomNeighbor = map[sourceRow + 1][sourceCol];
-			source.shortest = Math.min(bottomNeighbor.shortest, rightNeighbor.shortest) + 1;
-			if (source.shortest == bottomNeighbor.shortest + 1)
-			source.nextStep = bottomNeighbor;
-			else
-			source.nextStep = rightNeighbor;
+			Cell rightNeighbor = map[sourceRow][sourceCol + source.horizontalJump > 0 ? source.horizontalJump : 1],
+			bottomNeighbor = map[sourceRow + source.verticalJump > 0 ? source.verticalJump : 1][sourceCol];
+			
+			if(source.noRight) {
+				rightNeighbor = null;
+				source.shortest = bottomNeighbor.shortest + source.wait + 1;
+				source.nextStep = bottomNeighbor;
+			} else if(source.noDown) {
+				bottomNeighbor = null;
+				source.shortest = rightNeighbor.shortest + source.wait + 1;
+				source.nextStep = rightNeighbor;
+			} else {
+				source.shortest = Math.min(bottomNeighbor.shortest + source.wait, rightNeighbor.shortest + source.wait) + 1;
+				if (source.shortest == bottomNeighbor.shortest + 1) {
+					source.nextStep = bottomNeighbor;
+				} else {
+					source.nextStep = rightNeighbor;
+				}
+			}
+
 		}
 	}
 	
