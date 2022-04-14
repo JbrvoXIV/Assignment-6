@@ -87,30 +87,26 @@ public class Maze {
 		solveHelper(map[sourceRow][sourceCol + 1], target);// call it recursively for right neighbor
 		if (sourceRow == rowsMinus1) {
 			if(source.deadend) {
-				source.shortest = 100;
 				source.nextStep = null;
-			} else {
-				if(source.noDown) {
-					if(source.horizontalJump > 0) {
-						source.shortest = map[sourceRow][sourceCol + source.horizontalJump].shortest + source.wait + 1;
-						source.nextStep = map[sourceRow][sourceCol + source.horizontalJump];
-					} else {
-						source.shortest = map[sourceRow][sourceCol + 1].shortest + source.wait + 1;
-						source.nextStep = map[sourceRow][sourceCol + 1];
-					}
+			} else if(source.noDown) {
+				if(source.horizontalJump > 0) {
+					source.shortest = map[sourceRow][sourceCol + source.horizontalJump].shortest + source.wait + 1;
+					source.nextStep = map[sourceRow][sourceCol + source.horizontalJump];
 				} else {
-					if(source.horizontalJump > 0) {
-						source.shortest = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump].shortest + source.wait + 1;
-						source.nextStep = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump];
-					} else {
-						source.shortest = map[sourceRow + source.verticalJump][sourceCol + 1].shortest + source.wait + 1;
-						source.nextStep = map[sourceRow + source.verticalJump][sourceCol + 1];
-					}
+					source.shortest = map[sourceRow][sourceCol + 1].shortest + source.wait + 1;
+					source.nextStep = map[sourceRow][sourceCol + 1];
+				}
+			} else {
+				if(source.horizontalJump > 0) {
+					source.shortest = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump].shortest + source.wait + 1;
+					source.nextStep = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump];
+				} else {
+					source.shortest = map[sourceRow + source.verticalJump][sourceCol + 1].shortest + source.wait + 1;
+					source.nextStep = map[sourceRow + source.verticalJump][sourceCol + 1];
 				}
 			}
 		} else if (sourceCol == columnMinus1) {
 			if(source.deadend) {
-				source.shortest = 100;
 				source.nextStep = null;
 			} else {
 				if(source.noRight) {
@@ -132,26 +128,44 @@ public class Maze {
 				}
 			}
 		} else {
-			Cell rightNeighbor = map[sourceRow][sourceCol + source.horizontalJump > 0 ? source.horizontalJump : 1],
-			bottomNeighbor = map[sourceRow + source.verticalJump > 0 ? source.verticalJump : 1][sourceCol];
-			
+			Cell rightNeighbor = map[sourceRow][sourceCol + (source.horizontalJump > 0 ? source.horizontalJump : 1)],
+			bottomNeighbor = map[sourceRow + (source.verticalJump > 0 ? source.verticalJump : 1)][sourceCol],
+			diagonalNeighbor = (source.verticalJump > 0 && source.horizontalJump > 0) ? map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump] : null;
+
 			if(source.noRight) {
 				rightNeighbor = null;
-				source.shortest = bottomNeighbor.shortest + source.wait + 1;
-				source.nextStep = bottomNeighbor;
+				if(diagonalNeighbor != null) {
+					source.shortest = Math.min(bottomNeighbor.shortest + source.wait, diagonalNeighbor.shortest + source.wait) + 1;
+					if(source.shortest == bottomNeighbor.shortest + source.wait + 1) {
+						source.nextStep = bottomNeighbor;
+					} else {
+						source.nextStep = diagonalNeighbor.nextStep;
+					}
+				} else {
+					source.shortest = bottomNeighbor.shortest + source.wait + 1;
+					source.nextStep = bottomNeighbor.nextStep;
+				}
 			} else if(source.noDown) {
 				bottomNeighbor = null;
-				source.shortest = rightNeighbor.shortest + source.wait + 1;
-				source.nextStep = rightNeighbor;
+				if(diagonalNeighbor != null) {
+					source.shortest = Math.min(rightNeighbor.shortest + source.wait, diagonalNeighbor.shortest + source.wait) + 1;
+					if(source.shortest == rightNeighbor.shortest + source.wait + 1) {
+						source.nextStep = rightNeighbor;
+					} else {
+						source.nextStep = diagonalNeighbor.nextStep;
+					}
+				} else {
+					source.shortest = rightNeighbor.shortest + source.wait + 1;
+					source.nextStep = rightNeighbor.nextStep;
+				}
 			} else {
 				source.shortest = Math.min(bottomNeighbor.shortest + source.wait, rightNeighbor.shortest + source.wait) + 1;
-				if (source.shortest == bottomNeighbor.shortest + 1) {
+				if (source.shortest == bottomNeighbor.shortest + source.wait + 1) {
 					source.nextStep = bottomNeighbor;
 				} else {
 					source.nextStep = rightNeighbor;
 				}
 			}
-
 		}
 	}
 	
