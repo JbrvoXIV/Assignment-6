@@ -86,9 +86,9 @@ public class Maze {
 		// yet!
 		solveHelper(map[sourceRow][sourceCol + 1], target);// call it recursively for right neighbor
 		if (sourceRow == rowsMinus1) {
-			if(source.deadend) {
+			if(source.deadend) { // check if row 5, columns 0-3 contains DE
 				source.nextStep = null;
-			} else if(source.noDown) {
+			} else if(source.noDown) { // check if row 5, columns 0-3 contain XD
 				if(source.horizontalJump > 0) {
 					source.shortest = map[sourceRow][sourceCol + source.horizontalJump].shortest + source.wait + 1;
 					source.nextStep = map[sourceRow][sourceCol + source.horizontalJump];
@@ -96,7 +96,7 @@ public class Maze {
 					source.shortest = map[sourceRow][sourceCol + 1].shortest + source.wait + 1;
 					source.nextStep = map[sourceRow][sourceCol + 1];
 				}
-			} else {
+			} else { // assign row 5, columns 0-4 the next piece with time depending on jump and wait time
 				if(source.horizontalJump > 0) {
 					source.shortest = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump].shortest + source.wait + 1;
 					source.nextStep = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump];
@@ -106,10 +106,10 @@ public class Maze {
 				}
 			}
 		} else if (sourceCol == columnMinus1) {
-			if(source.deadend) {
+			if(source.deadend) { // check if rows 0-5, column 4 contains DE
 				source.nextStep = null;
 			} else {
-				if(source.noRight) {
+				if(source.noRight) { // check if rows 0-5, column 4 contains XR
 					if(source.verticalJump > 0) {
 						source.shortest = map[sourceRow + source.verticalJump][sourceCol].shortest + source.wait + 1;
 						source.nextStep = map[sourceRow + source.verticalJump][sourceCol];
@@ -117,7 +117,7 @@ public class Maze {
 						source.shortest = map[sourceRow + 1][sourceCol].shortest + source.wait + 1;
 						source.nextStep = map[sourceRow + 1][sourceCol];
 					}
-				} else {
+				} else { // assign row 0-5, columns 4 the next piece with time depending on jump and wait time
 					if(source.verticalJump > 0) {
 						source.shortest = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump].shortest + source.wait + 1;
 						source.nextStep = map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump];
@@ -127,43 +127,54 @@ public class Maze {
 					}
 				}
 			}
-		} else {
+		} else { // assign diagonal, right or bottom piece with appropriate jump and wait time for rows 0-4, columns 0-3
 			Cell rightNeighbor = map[sourceRow][sourceCol + (source.horizontalJump > 0 ? source.horizontalJump : 1)],
 			bottomNeighbor = map[sourceRow + (source.verticalJump > 0 ? source.verticalJump : 1)][sourceCol],
 			diagonalNeighbor = (source.verticalJump > 0 && source.horizontalJump > 0) ? map[sourceRow + source.verticalJump][sourceCol + source.horizontalJump] : null;
 
-			if(source.noRight) {
+			if(source.noRight) { // XR located
 				rightNeighbor = null;
-				if(diagonalNeighbor != null) {
+				if(diagonalNeighbor != null) { // diagonal ladder present
 					source.shortest = Math.min(bottomNeighbor.shortest + source.wait, diagonalNeighbor.shortest + source.wait) + 1;
-					if(source.shortest == bottomNeighbor.shortest + source.wait + 1) {
+					if(source.shortest == bottomNeighbor.shortest + source.wait + 1) { // assign bottom neighbour piece
 						source.nextStep = bottomNeighbor;
-					} else {
-						source.nextStep = diagonalNeighbor.nextStep;
+					} else { // assign diagonal jump piece 
+						source.nextStep = diagonalNeighbor.nextStep; 
 					}
-				} else {
+				} else { // no diagonal ladder present, bottom piece if only possibility
 					source.shortest = bottomNeighbor.shortest + source.wait + 1;
 					source.nextStep = bottomNeighbor.nextStep;
 				}
-			} else if(source.noDown) {
+			} else if(source.noDown) { // XD located
 				bottomNeighbor = null;
-				if(diagonalNeighbor != null) {
+				if(diagonalNeighbor != null) { // diagonal ladder present
 					source.shortest = Math.min(rightNeighbor.shortest + source.wait, diagonalNeighbor.shortest + source.wait) + 1;
-					if(source.shortest == rightNeighbor.shortest + source.wait + 1) {
+					if(source.shortest == rightNeighbor.shortest + source.wait + 1) { // assign right neighbour piece
 						source.nextStep = rightNeighbor;
-					} else {
+					} else { // assign diagonal jump piece
 						source.nextStep = diagonalNeighbor.nextStep;
 					}
-				} else {
+				} else { // no diagonal ladder present, right piece only possibility
 					source.shortest = rightNeighbor.shortest + source.wait + 1;
 					source.nextStep = rightNeighbor.nextStep;
 				}
-			} else {
+			} else { // No XR or XD located
 				source.shortest = Math.min(bottomNeighbor.shortest + source.wait, rightNeighbor.shortest + source.wait) + 1;
-				if (source.shortest == bottomNeighbor.shortest + source.wait + 1) {
-					source.nextStep = bottomNeighbor;
-				} else {
-					source.nextStep = rightNeighbor;
+				if(diagonalNeighbor != null) { // diagonal ladder located
+					source.shortest = Math.min(source.shortest, diagonalNeighbor.shortest + source.wait + 1);
+					if(source.shortest == bottomNeighbor.shortest + source.wait + 1) { // assign bottom piece
+						source.nextStep = bottomNeighbor;
+					} else if(source.shortest == rightNeighbor.shortest + source.wait + 1) { // assign right piece
+						source.nextStep = rightNeighbor;
+					} else { // assign diagonal piece
+						source.nextStep = diagonalNeighbor;
+					}
+				} else { // no diagonal ladder located
+					if (source.shortest == bottomNeighbor.shortest + source.wait + 1) { // assign bottom piece
+						source.nextStep = bottomNeighbor;
+					} else { // assign right piece
+						source.nextStep = rightNeighbor;
+					}
 				}
 			}
 		}
